@@ -1,0 +1,9 @@
+# Ignore system files and home directory
+*.log
+*.tmp
+.DS_Store
+.vscode/
+*.lock
+
+.env
+node_modules/
