@@ -54,61 +54,58 @@ Also, generate a confirmation message:
     const response = result.response;
     const analysisText = response.text();
 
-    
-
     const firstJsonMatch = analysisText.match(/\{[\s\S]*?\}/);
-    
+
     if (!firstJsonMatch) {
       console.error("No valid JSON found in AI response");
       return { originalMessage: message };
     }
 
-    
     try {
       const parsedResponse = JSON.parse(firstJsonMatch[0].trim());
 
-       if (!parsedResponse.content) {
-         return parsedResponse;
-       }
+      if (!parsedResponse.content) {
+        return parsedResponse;
+      }
 
-       if (!parsedResponse.recipient) {
-         parsedResponse.recipient = "default@recipient.com";
-       }
+      if (!parsedResponse.recipient) {
+        parsedResponse.recipient = "default@recipient.com";
+      }
 
-       if (!parsedResponse.sendAt) {
-         parsedResponse.sendAt = new Date();
-       }
+      if (!parsedResponse.sendAt) {
+        parsedResponse.sendAt = new Date();
+      }
 
-       const sendAtLocal = moment.tz(
-         parsedResponse.sendAt,
-         "YYYY-MM-DD HH:mm:ss",
-         userTimeZone
-       );
-       const sendAtUTC = sendAtLocal.clone().tz("UTC");
 
-       if (!sendAtUTC.isValid()) {
-         console.error("Error: Invalid date format ->", parsedResponse.sendAt);
-         return { error: "Invalid date format" };
-       }
+      const sendAtLocal = moment.tz(
+        parsedResponse.sendAt,
+        "YYYY-MM-DD HH:mm:ss",
+        userTimeZone
+      );
 
-       const humanReadableTime = sendAtUTC
-         .clone()
-         .tz(userTimeZone)
-         .format("dddd, MMMM D, YYYY at h:mm A");
+      if (!sendAtLocal.isValid()) {
+        console.error("Invalid date format received:", parsedResponse.sendAt);
+        return { error: "Invalid date format" };
+      }
 
-         return {
-           content: parsedResponse.content,
-           recipient: parsedResponse.recipient,
-           sendAt: sendAtUTC.toISOString(),
-           confirmationMessage: `Your message ('${parsedResponse.content}') to ('${parsedResponse.recipient}') has been scheduled for ${humanReadableTime}.`,
-         };
+      const sendAtUTC = sendAtLocal.utc();
+
+      const humanReadableTime = sendAtUTC
+        .clone()
+        .tz(userTimeZone)
+        .format("dddd, MMMM D, YYYY at h:mm A");
+
+      return {
+        content: parsedResponse.content,
+        recipient: parsedResponse.recipient,
+        sendAt: sendAtUTC.toISOString(),
+        confirmationMessage: `Your message ('${parsedResponse.content}') to ('${parsedResponse.recipient}') has been scheduled for ${humanReadableTime}.`,
+      };
     } catch (error) {
       console.error("JSON Parsing Error:", error);
       console.error("Faulty AI Response:", analysisText);
       return { originalMessage: message };
     }
-
-  
   } catch (error) {
     console.error("Error formatting message:", error);
     return { originalMessage: message };
