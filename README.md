@@ -17,7 +17,7 @@ The **Message Scheduler API** enables users to schedule messages for future deli
 
 ### 1️⃣ Clone the Repository  
 ```sh
-git clone https://github.com/your-repo/message-scheduler.git
+git clone https://github.com/telexintegrations/message_scheduler.git
 cd message-scheduler
 ```
 
