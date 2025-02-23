@@ -9,7 +9,11 @@ The **Message Scheduler API** enables users to schedule messages for future deli
 ✅ **Time Zone Handling** – Automatically detects the system’s timezone for accurate scheduling.  
 ✅ **Default Recipient** – Assigns a default recipient (`default@recipient.com`) if none is provided.  
 ✅ **Reliable Delivery** – Uses `node-cron` and `nodemailer` for efficient message dispatch.  
-✅ **Persistent Storage** – Saves scheduled messages in MongoDB for tracking and retrieval.  
+✅ **Persistent Storage** – Saves scheduled messages in MongoDB for tracking and retrieval. 
+
+**Message Scheduler Example:**
+
+![](screenshot/image.png)
 
 ---
 
