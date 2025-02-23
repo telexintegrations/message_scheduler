@@ -10,10 +10,12 @@ const scheduleMessage = () => {
             const now = new Date();
             const nowUTC = new Date(now.toISOString());
 
+
             const messages = await messageModel.find({
-                sendAt: { $lte: nowUTC},
-                sent: false,
+              sendAt: { $lte: nowUTC.toISOString() },
+              sent: false,
             });
+
 
             for (const msg of messages) {
                 await sendMessage(msg);
