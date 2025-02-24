@@ -10,7 +10,7 @@ const formatMessage = async (message) => {
       genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     }
 
-    const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const userTimeZone = moment.tz.guess(); 
     const currentDate = new Date().toISOString().split("T")[0];
 
     const prompt = `
@@ -20,21 +20,22 @@ If the message is about scheduling, return this JSON format:
 {
   "content": "The actual message to be sent",
   "recipient": "A valid email (if missing, infer from message or use 'default@recipient.com')",
-  "sendAt": "A valid future UTC date-time in YYYY-MM-DD HH:mm:ss UTC"
+  "sendAt": "A valid future UTC date-time in ISO 8601 format (YYYY-MM-DDTHH:mm:ssZ)"
 }
 
 **Rules:**
 1. Extract the recipient’s **exact email** from the message **without changing it**.
 2. If the email is missing, infer it but do NOT modify an explicitly mentioned email.
-3. Assume the provided time is in the user's local timezone: **${userTimeZone}**.
-4. Convert the mentioned time **to UTC** before returning it as **sendAt**.
+3. **All times in the message are in this timezone: '${userTimeZone}'. Convert them to UTC before returning sendAt.**
+4. Convert the mentioned time **from the user's timezone to UTC**.
 5. If no date is given, assume it is **today** at the mentioned time.
-6. **If the time is already in the past, schedule it for tomorrow.**
+6. **If the time is in the past, schedule it for tomorrow.**
 7. If no time is given, schedule it for **the next hour**.
-8. Convert **sendAt UTC** back into **the user's local timezone** for confirmation.
+8. **Confirm the final time by converting the UTC time back into '${userTimeZone}' and include this in the response.**
 9. **If no recipient is found, use 'default@recipient.com'.**.
 
 **Current Date:** ${currentDate} (YYYY-MM-DD)
+**User Timezone:** ${userTimeZone}
 
 Also, generate a confirmation message:
 {
@@ -49,7 +50,8 @@ Also, generate a confirmation message:
 <userMessage>${message}</userMessage>
 `;
 
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     const result = await model.generateContent(prompt);
     const response = result.response;
     const analysisText = response.text();
@@ -67,7 +69,7 @@ Also, generate a confirmation message:
       .trim();
 
     try {
-       const parsedResponse = JSON.parse(cleanJson);
+      const parsedResponse = JSON.parse(cleanJson);
 
       if (!parsedResponse.content) {
         return parsedResponse;
@@ -81,9 +83,8 @@ Also, generate a confirmation message:
         parsedResponse.sendAt = new Date();
       }
 
-      const sendAtLocal = moment.tz(
-        parsedResponse.sendAt,
-        "YYYY-MM-DD HH:mm:ss",
+
+      const sendAtLocal = moment(parsedResponse.sendAt, moment.ISO_8601).tz(
         userTimeZone
       );
 
@@ -92,7 +93,9 @@ Also, generate a confirmation message:
         return { error: "Invalid date format" };
       }
 
-      const sendAtUTC = sendAtLocal.utc();
+      const sendAtUTC = sendAtLocal
+        .clone()
+        .utc();
 
       const humanReadableTime = sendAtUTC
         .clone()
