@@ -23,18 +23,20 @@ describe("POST /schedule", () => {
     expect(response.body.message).toMatch(/has been scheduled/);
   });
 
+
   it("should assign a default recipient if none is provided", async () => {
-    const messageData = {
-      message: "Remind me about the meeting at 3 PM.",
-    };
+    const messageData = { message: "Remind me about the meeting at 3 PM." };
 
     messageModel.prototype.save.mockResolvedValueOnce({});
 
     const response = await request(app).post("/schedule").send(messageData);
 
     expect(response.status).toBe(200);
-    expect(response.body.message).toMatch(/default@recipient.com/);
+
+    expect(response.body).toHaveProperty("message");
+    expect(response.body.message || "").toMatch(/default@recipient.com/);
   });
+
 
   it("should return an error if content is missing", async () => {
     const messageData = { message: "" };

@@ -108,6 +108,45 @@ npm test
 
 ---
 
+## **Testing the Message Scheduler with Telex**  
+
+This guide will walk you through testing the message scheduling feature of your application.  
+
+### **Step 1: Set Up the Application**  
+Ensure the application is running locally or deployed.
+
+### **Step 2: Send a Test Message**  
+Use **Telex** to send a request to the `/schedule` endpoint.  
+
+#### **Example 1: Scheduling a Message**  
+Request:  
+    "message": "Thank you message to bertleypriscy@gmail.com by 12:04 PM"
+
+Expected Response:
+
+    "Output message to Telex Channel": "Your message ('Thank you') to ('bertleypriscy@gmail.com') has been scheduled for Monday, February 24, 2025 at 12:04 PM.",
+
+```
+
+#### **Example 2: Sending a Non-Scheduled Message**
+
+Request:  
+
+    "message": "Thank you message"
+
+```
+Expected Response:  
+
+    "Output message to Telex Channel": "Thank you message"
+
+
+### **Step 3: Verify Behavior in Telex**  
+1. Log in to your **Telex Channel**.   
+2. Confirm that the correct response is returned based on whether the message is a scheduled reminder or not.  
+  
+
+---
+
 ## 📜 License  
 This project is licensed under the **MIT License**.  
 
