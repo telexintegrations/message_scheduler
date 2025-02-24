@@ -61,8 +61,13 @@ Also, generate a confirmation message:
       return { originalMessage: message };
     }
 
+    let cleanJson = firstJsonMatch[0]
+      .replace(/[\u0000-\u001F\u007F-\u009F]/g, "")
+      .replace(/,\s*}/g, "}")
+      .trim();
+
     try {
-      const parsedResponse = JSON.parse(firstJsonMatch[0].trim());
+       const parsedResponse = JSON.parse(cleanJson);
 
       if (!parsedResponse.content) {
         return parsedResponse;
@@ -75,7 +80,6 @@ Also, generate a confirmation message:
       if (!parsedResponse.sendAt) {
         parsedResponse.sendAt = new Date();
       }
-
 
       const sendAtLocal = moment.tz(
         parsedResponse.sendAt,
@@ -103,7 +107,7 @@ Also, generate a confirmation message:
       };
     } catch (error) {
       console.error("JSON Parsing Error:", error);
-      console.error("Faulty AI Response:", analysisText);
+      console.error("Faulty AI Response:", cleanJson);
       return { originalMessage: message };
     }
   } catch (error) {
